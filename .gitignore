@@ -1,0 +1,20 @@
+# Datos crudos (pesados, no se versionan)
+m5_data/
+*.zip
+clean/
+data/
+
+# Salidas
+outputs/
+*.png
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Credenciales (NUNCA subir)
+*.env
+kaggle.json
+access_token

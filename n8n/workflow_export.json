@@ -1,0 +1,370 @@
+{
+  "name": "Reposicion Inteligente de Inventario - CA_1",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "1f97915e-9062-4ada-9d85-ed2294dabfe7",
+      "name": "Disparador diario",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "# ================================================================\n# NODO CODE (Python) - Procesa las ventas que llegan de Google Sheets\n# Lee _items (filas: item_id, date, sales), arma el historial por SKU,\n# pronostica la demanda y calcula la reposicion. Sin imports.\n# ================================================================\n\ndef media_movil(hist, h, ventana=7):\n    ult = hist[-ventana:]\n    prom = sum(ult) / len(ult)\n    return [max(0.0, prom) for _ in range(h)]\n\ndef naive_estacional(hist, h, periodo=7):\n    out = []\n    for i in range(h):\n        out.append(max(0.0, hist[-periodo + (i % periodo)]))\n    return out\n\ndef holt_winters(hist, h, periodo=7, alpha=0.4, beta=0.05, gamma=0.3, phi=0.95):\n    y = list(hist); n = len(y)\n    if n < 2 * periodo:\n        return media_movil(y, h, min(periodo, n))\n    nivel = sum(y[:periodo]) / periodo\n    tend = (sum(y[periodo:2*periodo]) - sum(y[:periodo])) / (periodo * periodo)\n    estac = [y[i] - nivel for i in range(periodo)]\n    for t in range(n):\n        val = y[t]; idx = t % periodo; nant = nivel\n        nivel = alpha * (val - estac[idx]) + (1 - alpha) * (nivel + tend)\n        tend = beta * (nivel - nant) + (1 - beta) * tend\n        estac[idx] = gamma * (val - nivel) + (1 - gamma) * estac[idx]\n    out = []; damp = 0.0\n    for i in range(1, h + 1):\n        damp += phi ** i; idx = (n - 1 + i) % periodo\n        out.append(max(0.0, nivel + damp * tend + estac[idx]))\n    return out\n\ndef _mae(real, pron):\n    return sum(abs(a - b) for a, b in zip(real, pron)) / len(real)\n\ndef holt_winters_auto(hist, h, periodo=7, val=28):\n    y = list(hist)\n    if len(y) < 2 * periodo + val:\n        return holt_winters(y, h, periodo), \"holt_winters\"\n    tr = y[:-val]; va = y[-val:]\n    mejor = (1e18, 0.4, 0.05, 0.3)\n    for a in [0.2, 0.4, 0.6]:\n        for b in [0.01, 0.05, 0.1]:\n            for g in [0.2, 0.4, 0.6]:\n                e = _mae(va, holt_winters(tr, val, periodo, a, b, g))\n                if e < mejor[0]:\n                    mejor = (e, a, b, g)\n    _, a, b, g = mejor\n    return holt_winters(y, h, periodo, a, b, g), \"holt_winters\"\n\ndef wmape(real, pron):\n    denom = 0.0; err = 0.0\n    for a, p in zip(real, pron):\n        denom += a; err += abs(a - p)\n    if denom == 0:\n        return None\n    return err / denom * 100.0\n\ndef punto_de_reorden(pron, stock, lead_time=7, seguridad=0):\n    demanda_lead = sum(pron[:lead_time])\n    punto = demanda_lead + seguridad\n    return {\n        \"punto_reorden\": round(punto, 1),\n        \"reponer\": stock < punto,\n        \"cantidad_sugerida\": max(0, int(round(punto - stock))),\n    }\n\n# ---------------- 1) Leer las filas que llegan de Google Sheets ----------------\nfilas = []\nfor it in _items:\n    try:\n        j = it[\"json\"]\n    except (TypeError, KeyError):\n        j = it\n    filas.append(j)\n\n# Agrupar por producto, ordenado por fecha\npor_sku = {}\nfecha_max = \"\"\nfor r in filas:\n    sku = str(r[\"item_id\"])\n    try:\n        s = float(r[\"sales\"])\n    except (TypeError, ValueError):\n        s = 0.0\n    d = str(r[\"date\"])\n    por_sku.setdefault(sku, []).append((d, s))\n    if d > fecha_max:\n        fecha_max = d\n\nHIST = {}\nfor sku in por_sku:\n    pares = sorted(por_sku[sku])\n    HIST[sku] = [v for _, v in pares]\n\n# ---------------- 2) Stock actual (en produccion vendria de otra fuente) --------\nSTOCK = {\"FOODS_2_019\": 41, \"FOODS_2_197\": 107, \"FOODS_3_064\": 213, \"FOODS_3_080\": 225,\n         \"FOODS_3_090\": 159, \"FOODS_3_099\": 83, \"FOODS_3_120\": 378, \"FOODS_3_252\": 465,\n         \"FOODS_3_282\": 56, \"FOODS_3_295\": 132, \"FOODS_3_499\": 95, \"FOODS_3_501\": 283,\n         \"FOODS_3_511\": 74, \"FOODS_3_555\": 109, \"FOODS_3_586\": 291, \"FOODS_3_587\": 420,\n         \"FOODS_3_681\": 66, \"FOODS_3_714\": 94, \"FOODS_3_739\": 80, \"FOODS_3_741\": 183}\n\n# ---------------- 3) Pronostico + reposicion por SKU ----------------\nLEAD_TIME = 7\nPERIODO = 7\nitems_out = []\nfor sku in sorted(HIST.keys()):\n    serie = HIST[sku]\n    pron, metodo = holt_winters_auto(serie, LEAD_TIME, PERIODO)\n    demanda_lead = sum(pron)\n    demanda_prom = demanda_lead / LEAD_TIME\n    if len(serie) > LEAD_TIME + 2 * PERIODO:\n        pron_bt, _ = holt_winters_auto(serie[:-LEAD_TIME], LEAD_TIME, PERIODO)\n        wm = wmape(serie[-LEAD_TIME:], pron_bt)\n    else:\n        wm = None\n    if wm is None:\n        conf = \"media\"\n    elif wm <= 30:\n        conf = \"alta\"\n    elif wm <= 50:\n        conf = \"media\"\n    else:\n        conf = \"baja\"\n    if sku in STOCK:\n        stock = STOCK[sku]\n    else:\n        stock = int(round(demanda_prom * 5))\n    ro = punto_de_reorden(pron, stock, LEAD_TIME)\n    items_out.append({\n        \"item_id\": sku,\n        \"demanda_prom_dia\": round(demanda_prom, 1),\n        \"demanda_7d\": round(demanda_lead, 1),\n        \"stock_actual\": stock,\n        \"punto_reorden\": ro[\"punto_reorden\"],\n        \"reponer\": ro[\"reponer\"],\n        \"cantidad_sugerida\": ro[\"cantidad_sugerida\"],\n        \"wmape\": (round(wm, 1) if wm is not None else None),\n        \"confianza\": conf,\n        \"metodo\": metodo,\n    })\n\nsalida = {\"tienda\": \"CA_1\", \"fecha\": fecha_max, \"lead_time_dias\": LEAD_TIME, \"items\": items_out}\nreturn [{\"json\": salida}]\n"
+      },
+      "id": "a019079a-94fd-4168-b5b3-308dea3ba3cb",
+      "name": "Modelo y reposicion (Python)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Datos del dia para la tienda {{ $json.tienda }} (fecha {{ $json.fecha }}, lead time {{ $json.lead_time_dias }} dias):\n{{ JSON.stringify($json.items) }}\n\nAnaliza cada producto y entrega el JSON segun el esquema.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Eres un analista de planificacion de inventario para una tienda de retail (supermercado). Tu usuario es el ENCARGADO DE COMPRAS, que cada manana decide que productos reponer. Recibes, por cada producto (SKU), los RESULTADOS YA CALCULADOS de un modelo de pronostico de demanda y una regla de reposicion. Tu trabajo NO es recalcular nada: es INTERPRETAR esos numeros y entregar una recomendacion clara, accionable y priorizada.\n\nREGLAS ESTRICTAS:\n1. Usa SOLO los datos del JSON de entrada. No inventes cifras, productos ni causas.\n2. Prioridad: 'alta' si reponer=true Y confianza='alta'; 'media' si reponer=true con confianza media/baja; 'baja' si reponer=false.\n3. Si confianza='baja' (o wmape>50), marca revision_humana=true y recomienda validar manualmente en vez de reponer automaticamente (punto de control humano).\n4. Se breve: cada campo de texto, 1-2 frases en espanol, sin tecnicismos.\n5. Responde SOLO con el JSON del esquema, sin texto adicional."
+        }
+      },
+      "id": "650ce0eb-84ac-43aa-abcd-dc653e1c6283",
+      "name": "Recomendacion (Claude)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        480,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-5",
+          "cachedResultName": "Claude Sonnet 5"
+        },
+        "options": {
+          "maxTokensToSample": 8000
+        }
+      },
+      "id": "a75e1710-38d5-42bf-a3f8-f465f5262fd5",
+      "name": "Claude (gateway)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.6,
+      "position": [
+        432,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"resumen\": \"1 de 20 productos requiere reposicion hoy; 1 marcado para revision humana.\", \"items\": [{\"item_id\": \"FOODS_3_090\", \"diagnostico\": \"Stock bajo frente a la demanda esperada en el lead time.\", \"recomendacion\": \"Emitir orden de compra por 345 unidades.\", \"prioridad\": \"alta\", \"justificacion\": \"Stock bajo el punto de reorden y pronostico confiable.\", \"revision_humana\": false}]}"
+      },
+      "id": "5f0b5d22-bf74-41c0-830a-0b04708ad29b",
+      "name": "Salida JSON",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// NODO CODE (JavaScript) - Arma los mensajes para Gmail / Telegram / registro\nconst out = $input.first().json.output || {};\nconst items = out.items || [];\nconst fecha = out.fecha || new Date().toISOString().slice(0, 10);\n\nconst filas = items.map(i =>\n  '<tr><td>' + i.item_id + '</td><td>' + i.prioridad + '</td><td>' +\n  i.recomendacion + '</td><td>' + i.justificacion + '</td><td>' +\n  (i.revision_humana ? 'Si' : 'No') + '</td></tr>'\n).join('');\n\nconst email_html =\n  '<h3>Recomendacion de reposicion - Tienda CA_1 (' + fecha + ')</h3>' +\n  '<p><b>' + (out.resumen || '') + '</b></p>' +\n  '<table border=\"1\" cellpadding=\"6\" style=\"border-collapse:collapse\">' +\n  '<tr><th>SKU</th><th>Prioridad</th><th>Recomendacion</th><th>Justificacion</th><th>Revision humana</th></tr>' +\n  filas + '</table>';\n\nconst telegram_text =\n  'Reposicion CA_1 - ' + fecha + '\\n' + (out.resumen || '') + '\\n\\n' +\n  items.map(i => '- [' + i.prioridad + '] ' + i.item_id + ': ' + i.recomendacion +\n    (i.revision_humana ? ' (revision humana)' : '')).join('\\n');\n\nconst n_alta = items.filter(i => i.prioridad === 'alta').length;\n\nreturn [{ json: {\n  fecha: fecha,\n  tienda: 'CA_1',\n  resumen: out.resumen || '',\n  n_items: items.length,\n  n_prioridad_alta: n_alta,\n  email_html: email_html,\n  telegram_text: telegram_text\n} }];\n"
+      },
+      "id": "8fd86dec-f17c-4d07-9593-9ebe4c6d01af",
+      "name": "Armar mensajes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "correo-del-encargado@ejemplo.com",
+        "subject": "=Reposicion de inventario CA_1 - {{ $json.fecha }} ({{ $json.n_prioridad_alta }} urgentes)",
+        "message": "={{ $json.email_html }}",
+        "options": {}
+      },
+      "id": "483ac56b-21e4-4628-8657-8008f1980604",
+      "name": "Enviar correo (Gmail)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        992,
+        144
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "TU_CHAT_ID",
+        "text": "={{ $json.telegram_text }}",
+        "additionalFields": {}
+      },
+      "id": "a7c99152-c3a9-4630-b806-92f14f4b3d6e",
+      "name": "Enviar Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        992,
+        304
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "Registro"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tienda",
+              "displayName": "tienda",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resumen",
+              "displayName": "resumen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "n_items",
+              "displayName": "n_items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "n_prioridad_alta",
+              "displayName": "n_prioridad_alta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "da54e285-7e3c-4ae0-abce-41badd7de7a7",
+      "name": "Registro historico (Sheets)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        464
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Reposicion inteligente de inventario (CA_1)\nDatos M5 Walmart reales. Flujo: pronostico de demanda (Holt-Winters en Python) -> regla de reposicion -> Claude redacta la recomendacion en JSON -> notificaciones.",
+        "height": 224,
+        "width": 544,
+        "color": 4
+      },
+      "id": "5a22e0df-5128-4918-a155-23535991097a",
+      "name": "Sticky Note deb5da83",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Antes de ejecutar\n1) Telegram: crea un bot con @BotFather, conecta la credencial y setea TELEGRAM_CHAT_ID.\n2) Google Sheets: elige/crea la planilla de registro.\n3) Gmail ya esta conectado. Cambia el destinatario si quieres.",
+        "height": 544,
+        "width": 160,
+        "color": 3
+      },
+      "id": "86f869ba-77e7-49bc-8334-69c58fe7cb43",
+      "name": "Sticky Note 57eae9b7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "ventas"
+        },
+        "options": {}
+      },
+      "id": "64f66a8c-cac7-4821-bdcc-e84306dc3ba0",
+      "name": "Leer ventas (Sheets)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        112,
+        480
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Modelo y reposicion (Python)": {
+      "main": [
+        [
+          {
+            "node": "Recomendacion (Claude)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recomendacion (Claude)": {
+      "main": [
+        [
+          {
+            "node": "Armar mensajes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude (gateway)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recomendacion (Claude)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salida JSON": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Recomendacion (Claude)",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armar mensajes": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo (Gmail)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar Telegram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Registro historico (Sheets)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disparador diario": {
+      "main": [
+        [
+          {
+            "node": "Leer ventas (Sheets)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer ventas (Sheets)": {
+      "main": [
+        [
+          {
+            "node": "Modelo y reposicion (Python)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "nodeGroups": [],
+  "tags": []
+}
