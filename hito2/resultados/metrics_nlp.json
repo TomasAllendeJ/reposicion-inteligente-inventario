@@ -1,0 +1,55 @@
+{
+  "n_reclamos": 90,
+  "clasificacion": {
+    "baseline_reglas": {
+      "accuracy": 0.889,
+      "f1_macro": 0.702
+    },
+    "transformer_embeddings": {
+      "accuracy": 0.963,
+      "f1_macro": 0.771
+    }
+  },
+  "rag_demo": {
+    "consulta": "productos que estan siempre agotados",
+    "resultados": [
+      {
+        "id": "R015",
+        "texto": "Hace semanas que no encuentro queso, siempre esta agotado.",
+        "score": 0.489
+      },
+      {
+        "id": "R084",
+        "texto": "Hace semanas que no encuentro galletas, siempre esta agotado.",
+        "score": 0.486
+      },
+      {
+        "id": "R072",
+        "texto": "Hace semanas que no encuentro aceite, siempre esta agotado.",
+        "score": 0.481
+      }
+    ]
+  },
+  "presion_quiebre_por_producto": {
+    "papel higienico": 4,
+    "pan": 4,
+    "cereal": 4,
+    "aceite": 3,
+    "detergente": 3,
+    "cafe": 3,
+    "mantequilla": 3,
+    "jamon": 3,
+    "yogur": 2,
+    "queso": 2,
+    "arroz": 2,
+    "bebida cola": 2,
+    "azucar": 2,
+    "huevos": 1,
+    "galletas": 1,
+    "atun en lata": 1,
+    "leche": 1,
+    "fideos": 1,
+    "cerveza": 1,
+    "agua mineral": 1
+  }
+}

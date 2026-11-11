@@ -1,0 +1,15 @@
+# Modelo de imagenes (R4) - reconocimiento de productos de gondola
+# Instalar torch/torchvision CPU con:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+torch>=2.5
+torchvision>=0.20
+scikit-learn>=1.3
+pandas>=2.0
+pillow>=10.0
+numpy>=1.26
+matplotlib>=3.7
+joblib>=1.3
+# Servicio que n8n llama por HTTP
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9

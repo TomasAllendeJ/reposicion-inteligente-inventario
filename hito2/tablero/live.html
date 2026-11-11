@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tablero en vivo - Reposicion CA-1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#eef1f4; --surface:#fff; --surface-2:#f5f7f9; --fg:#16202b; --muted:#5b6672;
+    --border:#dde3ea; --accent:#2a9d8f; --navy:#0f2444; --good:#2a9d8f; --warn:#d98a0b; --crit:#d1495b;
+    --fh:"Space Grotesk",system-ui,sans-serif; --fb:"Inter",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){:root{
+    --bg:#0e141b; --surface:#161e27; --surface-2:#1b2530; --fg:#e8edf2; --muted:#9aa7b4;
+    --border:#263241; --accent:#39b3a3; --navy:#0a1220; --good:#39b3a3; --warn:#e3a53a; --crit:#e46275; color-scheme:dark;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--fb);line-height:1.5}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 18px}
+  header.bar{background:var(--navy);color:#fff;position:sticky;top:0;z-index:5}
+  .bar .wrap{display:flex;align-items:center;gap:12px;padding:14px 18px;flex-wrap:wrap}
+  .bar h1{font-family:var(--fh);font-size:1.15rem;margin:0;font-weight:600}
+  .bar h1 span{color:#7fd8cc}
+  .bar .meta{margin-left:auto;font-size:.8rem;color:#bcd0e8}
+  button{font-family:inherit;cursor:pointer}
+  .btn{background:var(--accent);color:#042c27;border:none;border-radius:8px;padding:8px 14px;font-weight:600;font-size:.85rem}
+  .btn.ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25)}
+  main{padding:22px 0 50px}
+  h2.sec{font-family:var(--fh);font-size:1.05rem;margin:28px 0 4px;display:flex;align-items:center;gap:9px}
+  h2.sec .tag{font-size:.62rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--accent);border:1px solid var(--border);border-radius:999px;padding:2px 8px}
+  p.lead{color:var(--muted);font-size:.9rem;margin:2px 0 14px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .kpi .v{font-family:var(--fh);font-size:1.8rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+  .kpi .l{color:var(--muted);font-size:.78rem;margin-top:3px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;min-width:0}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .card h3{font-family:var(--fh);font-size:.95rem;margin:0 0 2px}
+  .card .hint{color:var(--muted);font-size:.78rem;margin:0 0 10px}
+  .chartbox{position:relative;height:230px}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-top:4px}
+  table{border-collapse:collapse;width:100%;font-size:.85rem}
+  th,td{padding:9px 12px;text-align:left;vertical-align:top}
+  thead th{background:var(--surface-2);color:var(--muted);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.4px}
+  tbody tr{border-top:1px solid var(--border)}
+  .pill{display:inline-block;font-size:.72rem;font-weight:600;padding:2px 9px;border-radius:999px}
+  .pill.alta{color:#fff;background:var(--crit)} .pill.media{color:#3a2a00;background:var(--warn)} .pill.baja{color:var(--muted);background:var(--surface-2);border:1px solid var(--border)}
+  .rev{color:var(--warn);font-weight:600;font-size:.76rem}
+  .demo{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:720px){.demo{grid-template-columns:1fr}}
+  input[type=file],textarea{width:100%;font-family:inherit;font-size:.88rem;border:1px solid var(--border);border-radius:8px;padding:9px;background:var(--surface-2);color:var(--fg)}
+  textarea{min-height:70px;resize:vertical}
+  .res{margin-top:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:.86rem;min-height:40px}
+  .res b{font-family:var(--fh)}
+  .big{font-family:var(--fh);font-size:1.3rem;font-weight:700}
+  #prev{max-height:160px;border-radius:8px;margin-top:8px;display:none}
+  .muted{color:var(--muted)}
+  .conf{height:7px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:6px}
+  .conf > i{display:block;height:100%;background:var(--accent)}
+  footer{color:var(--muted);font-size:.78rem;border-top:1px solid var(--border);margin-top:34px;padding:18px 0}
+</style>
+</head>
+<body>
+<header class="bar"><div class="wrap">
+  <h1><span>Reposicion</span> en vivo &middot; Tienda CA-1</h1>
+  <span class="meta" id="meta">cargando...</span>
+  <button class="btn ghost" onclick="cargarCorrida()">&#8635; Actualizar</button>
+</div></header>
+
+<main class="wrap">
+  <h2 class="sec"><span class="tag">Ultima corrida</span> Recomendacion del sistema</h2>
+  <p class="lead">Se actualiza con cada ejecucion del flujo de n8n (segun los datos actuales del Google Sheets). Pulsa "Actualizar" tras correr el flujo.</p>
+  <div class="kpis" id="runKpis"></div>
+  <div class="card" id="runResumen" style="margin-top:14px"></div>
+  <div class="tablewrap" id="runTablaWrap" style="margin-top:14px"></div>
+
+  <h2 class="sec"><span class="tag">Prueba en vivo</span> Modelos de IA</h2>
+  <p class="lead">Sube una foto de un producto o escribe un reclamo de cliente y mira como responden los modelos al instante.</p>
+  <div class="demo">
+    <div class="card">
+      <h3>&#128247; Reconocer producto (imagen)</h3>
+      <p class="hint">Modelo ViT. Sube una foto (fruta, paquete, botella).</p>
+      <input type="file" id="img" accept="image/*">
+      <img id="prev" alt="preview">
+      <div class="res" id="imgRes"><span class="muted">Esperando una foto...</span></div>
+    </div>
+    <div class="card">
+      <h3>&#128172; Clasificar reclamo (texto)</h3>
+      <p class="hint">Transformer + RAG. Escribe un reclamo como si fueras un cliente.</p>
+      <textarea id="rec" placeholder="Ej: nunca hay leche, siempre esta agotado"></textarea>
+      <button class="btn" style="margin-top:8px" onclick="demoReclamo()">Analizar reclamo</button>
+      <div class="res" id="recRes"><span class="muted">Escribe un reclamo y pulsa Analizar...</span></div>
+    </div>
+  </div>
+
+  <h2 class="sec"><span class="tag">Modelos</span> Resultados (fijos)</h2>
+  <p class="lead">Comparacion de los 3 modelos del Hito 2 contra su alternativa simple (datos de entrenamiento).</p>
+  <div class="cards">
+    <div class="card"><h3>Serie temporal (MAE)</h3><p class="hint">Menor = mejor. Gana el LSTM.</p><div class="chartbox"><canvas id="c1"></canvas></div></div>
+    <div class="card"><h3>Imagenes (accuracy)</h3><p class="hint">Gana el ViT.</p><div class="chartbox"><canvas id="c2"></canvas></div></div>
+    <div class="card"><h3>Reclamos (accuracy / F1)</h3><p class="hint">Transformer vs reglas.</p><div class="chartbox"><canvas id="c3"></canvas></div></div>
+    <div class="card"><h3>Presion de reclamos</h3><p class="hint">Quiebres por producto.</p><div class="chartbox" style="height:300px"><canvas id="c4"></canvas></div></div>
+  </div>
+
+  <footer>Servido por el servicio local de modelos (FastAPI). Datos M5 Walmart (CA_1) + reclamos simulados. La seccion "Ultima corrida" refleja la ejecucion mas reciente del flujo n8n.</footer>
+</main>
+
+<script>
+const FIJOS = {
+  serie:{labels:["Media movil","Naive","Holt-Winters","GRU","LSTM"],vals:[7.912,8.064,7.34,6.578,6.461]},
+  imagen:{labels:["Baseline color","ResNet50","ViT"],vals:[0.3175,0.8483,0.8684]},
+  nlp:{reglas:[0.889,0.702],transformer:[0.963,0.771]},
+  presion:{"papel higienico":4,"pan":4,"cereal":4,"aceite":3,"detergente":3,"cafe":3,"mantequilla":3,"jamon":3,"yogur":2,"queso":2,"arroz":2,"bebida cola":2,"azucar":2,"huevos":1,"galletas":1,"atun en lata":1,"leche":1,"fideos":1,"cerveza":1,"agua mineral":1}
+};
+function cssv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+// ---------- Ultima corrida ----------
+async function cargarCorrida(){
+  try{
+    const r = await fetch('/tablero/datos',{cache:'no-store'});
+    const j = await r.json();
+    const c = j.corrida;
+    if(!c){
+      document.getElementById('meta').textContent = 'sin corridas aun';
+      document.getElementById('runKpis').innerHTML = '';
+      document.getElementById('runResumen').innerHTML = '<span class="muted">Aun no hay corridas. Ejecuta el flujo en n8n y pulsa Actualizar.</span>';
+      document.getElementById('runTablaWrap').innerHTML = '';
+      return;
+    }
+    document.getElementById('meta').textContent = 'Ultima corrida: ' + (c.generado_en || c.fecha || '');
+    const recs = c.recomendaciones || [];
+    document.getElementById('runKpis').innerHTML =
+      '<div class="kpi"><div class="v">'+(c.n_items!=null?c.n_items:recs.length)+'</div><div class="l">Productos a reponer</div></div>'+
+      '<div class="kpi"><div class="v">'+(c.n_prioridad_alta!=null?c.n_prioridad_alta:'-')+'</div><div class="l">Prioridad alta</div></div>'+
+      '<div class="kpi"><div class="v">'+(c.fecha||'-')+'</div><div class="l">Fecha de la corrida</div></div>';
+    document.getElementById('runResumen').innerHTML = '<h3>Resumen de Claude</h3><p style="margin:6px 0 0">'+(c.resumen||'')+'</p>';
+    if(recs.length){
+      let html = '<table><thead><tr><th>SKU</th><th>Prioridad</th><th>Recomendacion</th><th>Justificacion</th><th>Rev.</th></tr></thead><tbody>';
+      recs.forEach(function(i){
+        html += '<tr><td><b>'+(i.item_id||'')+'</b></td><td><span class="pill '+(i.prioridad||'baja')+'">'+(i.prioridad||'')+'</span></td><td>'+(i.recomendacion||'')+'</td><td class="muted">'+(i.justificacion||'')+'</td><td>'+(i.revision_humana?'<span class=rev>revisar</span>':'-')+'</td></tr>';
+      });
+      document.getElementById('runTablaWrap').innerHTML = html + '</tbody></table>';
+    } else {
+      document.getElementById('runTablaWrap').innerHTML = '';
+    }
+  }catch(e){
+    document.getElementById('meta').textContent = 'error al cargar';
+  }
+}
+
+// ---------- Demo imagen ----------
+document.getElementById('img').addEventListener('change', async function(ev){
+  const f = ev.target.files[0]; if(!f) return;
+  const prev = document.getElementById('prev'); prev.src = URL.createObjectURL(f); prev.style.display='block';
+  const box = document.getElementById('imgRes'); box.innerHTML = '<span class="muted">Analizando...</span>';
+  try{
+    const fd = new FormData(); fd.append('file', f);
+    const r = await fetch('/predict_imagen',{method:'POST',body:fd});
+    const j = await r.json();
+    if(j.error){ box.innerHTML = 'Error: '+j.error; return; }
+    const pct = Math.round(j.confianza*100);
+    box.innerHTML = 'Producto: <span class="big">'+j.producto+'</span> ('+pct+'%)'+
+      '<div class="conf"><i style="width:'+pct+'%"></i></div>'+
+      (j.revision_humana?'<div class="rev" style="margin-top:6px">Confianza baja: revision humana</div>':'')+
+      '<div class="muted" style="margin-top:8px;font-size:.78rem">Top: '+(j.top3||[]).map(function(t){return t.producto+' '+Math.round(t.confianza*100)+'%';}).join(' / ')+'</div>';
+  }catch(e){ box.innerHTML = 'No se pudo conectar al servicio.'; }
+});
+
+// ---------- Demo reclamo ----------
+async function demoReclamo(){
+  const texto = document.getElementById('rec').value.trim();
+  const box = document.getElementById('recRes');
+  if(!texto){ box.innerHTML = '<span class="muted">Escribe un reclamo primero.</span>'; return; }
+  box.innerHTML = '<span class="muted">Analizando...</span>';
+  try{
+    const r = await fetch('/clasificar_reclamo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto:texto})});
+    const j = await r.json();
+    const rag = await (await fetch('/buscar_rag',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({consulta:texto,k:3})})).json();
+    const pct = Math.round((j.confianza||0)*100);
+    let html = 'Categoria: <span class="big">'+(j.categoria||'?')+'</span> ('+pct+'%)<div class="conf"><i style="width:'+pct+'%"></i></div>';
+    html += '<div class="muted" style="margin-top:10px;font-size:.78rem"><b>Reclamos parecidos (RAG):</b></div>';
+    (rag.resultados||[]).forEach(function(x){ html += '<div style="font-size:.8rem;margin-top:3px">&bull; '+x.texto+' <span class="muted">('+x.score+')</span></div>'; });
+    box.innerHTML = html;
+  }catch(e){ box.innerHTML = 'No se pudo conectar al servicio.'; }
+}
+
+// ---------- Charts fijos ----------
+function charts(){
+  const fg=cssv('--fg'),mut=cssv('--muted'),grid=cssv('--border'),acc=cssv('--accent'),crit=cssv('--crit'),warn=cssv('--warn');
+  Chart.defaults.font.family='Inter,sans-serif'; Chart.defaults.color=mut;
+  const g={color:grid};
+  const s=FIJOS.serie, mi=Math.min.apply(null,s.vals);
+  new Chart(c1,{type:'bar',data:{labels:s.labels,datasets:[{data:s.vals,backgroundColor:s.vals.map(function(v){return v===mi?acc:(mut+'66');}),borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:g,ticks:{color:mut}},x:{grid:{display:false},ticks:{color:fg}}}}});
+  const im=FIJOS.imagen, ma=Math.max.apply(null,im.vals);
+  new Chart(c2,{type:'bar',data:{labels:im.labels,datasets:[{data:im.vals,backgroundColor:im.vals.map(function(v){return v===ma?acc:(mut+'66');}),borderRadius:6}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:function(x){return Math.round(x.parsed.y*100)+'%';}}}},scales:{y:{max:1,grid:g,ticks:{color:mut,callback:function(v){return v*100+'%';}}},x:{grid:{display:false},ticks:{color:fg}}}}});
+  new Chart(c3,{type:'bar',data:{labels:['Accuracy','F1'],datasets:[{label:'Reglas',data:FIJOS.nlp.reglas,backgroundColor:mut+'66',borderRadius:6},{label:'Transformer',data:FIJOS.nlp.transformer,backgroundColor:acc,borderRadius:6}]},options:{plugins:{legend:{labels:{color:fg,boxWidth:12}}},scales:{y:{max:1,grid:g,ticks:{color:mut,callback:function(v){return v*100+'%';}}},x:{grid:{display:false},ticks:{color:fg}}}}});
+  const pk=Object.keys(FIJOS.presion);
+  new Chart(c4,{type:'bar',data:{labels:pk,datasets:[{data:pk.map(function(k){return FIJOS.presion[k];}),backgroundColor:pk.map(function(k){var n=FIJOS.presion[k];return n>=3?crit:(n===2?warn:(mut+'88'));}),borderRadius:5}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:g,ticks:{color:mut,precision:0}},y:{grid:{display:false},ticks:{color:fg,font:{size:11}}}}}});
+}
+
+cargarCorrida();
+charts();
+</script>
+</body>
+</html>

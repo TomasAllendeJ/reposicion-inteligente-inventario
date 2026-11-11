@@ -1,0 +1,36 @@
+{
+  "moneda": "CLP",
+  "supuestos": {
+    "n_sku": 20,
+    "demanda_prom_dia_sku": 24.8,
+    "precio_prom": 1500,
+    "margen": 0.25,
+    "margen_unidad": 375.0,
+    "tasa_quiebre_sin": 0.08,
+    "tasa_quiebre_con": 0.03,
+    "frac_venta_perdida": 0.5,
+    "horas_manual_dia": 1.0,
+    "costo_hora": 4000
+  },
+  "beneficio": {
+    "quiebres_evitados_sku_dias_mes": 30.0,
+    "unidades_recuperadas_mes": 372.3,
+    "beneficio_ventas_mes": 139607,
+    "horas_ahorradas_mes": 30.0,
+    "beneficio_horas_mes": 120000,
+    "beneficio_total_mes": 259607
+  },
+  "costo": {
+    "hosting_mes": 10000,
+    "mantencion_mes": 16000,
+    "gateway_ia": 0,
+    "costo_total_mes": 26000
+  },
+  "resultado": {
+    "neto_mes": 233607,
+    "roi_mensual": 9.0,
+    "beneficio_anual": 3115288,
+    "costo_anual": 312000,
+    "neto_anual": 2803288
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "n_clases": 43,
+  "n_train": 2640,
+  "n_test": 2485,
+  "resultados": [
+    {
+      "enfoque": "Transformer de vision (ViT)",
+      "backbone": "vit_b_16",
+      "accuracy": 0.8684,
+      "f1_macro": 0.8122,
+      "dim": 768
+    },
+    {
+      "enfoque": "CNN preentrenada (ResNet50)",
+      "backbone": "resnet50",
+      "accuracy": 0.8483,
+      "f1_macro": 0.7809,
+      "dim": 2048
+    },
+    {
+      "enfoque": "Baseline (histograma de color)",
+      "backbone": "baseline_hist",
+      "accuracy": 0.3175,
+      "f1_macro": 0.2233,
+      "dim": 96
+    }
+  ],
+  "mejor_backbone": "vit_b_16"
+}

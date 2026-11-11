@@ -1,11 +1,20 @@
 # Sistema Inteligente de Reposicion de Inventario (Retail)
 
-Proyecto Final - IA Generativa para la Gestion Industrial (Hito 1). Un flujo automatizado en
-**n8n** que, cada dia y sin intervencion manual, lee las ventas, **pronostica la demanda** de cada
-producto (SKU), decide **que reponer y cuanto**, y le pide a **Claude** una recomendacion priorizada
-que entrega por **Gmail y Telegram**, dejando registro en Google Sheets.
+Proyecto Final - IA Generativa para la Gestion Industrial. Un sistema que, cada dia, lee las
+ventas, **pronostica la demanda** de cada producto, decide **que reponer y cuanto**, y le pide a
+**Claude** una recomendacion priorizada que entrega por **Gmail y Telegram**, con registro en
+Google Sheets.
 
 > Caso: tienda de retail (datos reales M5 Walmart, tienda CA_1, 20 SKU de mayor venta).
+
+## Contenido del repositorio
+
+- **Hito 1** (este README, carpeta `scripts/` y `n8n/`): flujo base — pronostico de demanda
+  (Holt-Winters) + regla de reposicion + Claude + notificaciones.
+- **Hito 2** (carpeta [`hito2/`](hito2/)): sistema **integrado** que agrega tres modelos de IA
+  comparados con su alternativa simple — **serie temporal (LSTM)**, **imagenes (ViT)** y
+  **texto/NLP (Transformer + RAG)** — orquestados en n8n con **control humano**, un **tablero**
+  en HTML y evaluacion de **negocio (ROI)**. Ver [`hito2/README.md`](hito2/README.md).
 
 ## Arquitectura
 

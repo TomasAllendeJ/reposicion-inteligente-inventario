@@ -1,0 +1,11 @@
+{
+  "mae_promedio": {
+    "MAE_media_movil": 7.912,
+    "MAE_naive": 8.064,
+    "MAE_holtwinters": 7.34,
+    "MAE_LSTM": 6.461,
+    "MAE_GRU": 6.578
+  },
+  "gana_dl_vs_hw": 14,
+  "n_sku": 20
+}

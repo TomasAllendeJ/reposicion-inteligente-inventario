@@ -1,0 +1,91 @@
+id,fecha,producto,texto,categoria,sentimiento
+R085,2026-09-11,queso,"Pesima atencion, nadie supo decirme donde estaba el queso.",atencion,negativo
+R018,2026-09-12,yogur,"El yogur esta permanentemente sin reposicion, muy molesto.",quiebre_stock,negativo
+R076,2026-09-12,mantequilla,Me cobraron el mantequilla mas caro que el precio marcado en gondola.,precio,negativo
+R070,2026-09-13,papel higienico,Llevo un mes buscando papel higienico y jamas hay stock.,quiebre_stock,negativo
+R046,2026-09-14,bebida cola,"Felicitaciones, el bebida cola siempre esta bien surtido.",positivo,positivo
+R064,2026-09-14,cafe,"El cafe tenia mal sabor, parecia viejo.",calidad,negativo
+R025,2026-09-15,papel higienico,"Nunca tienen papel higienico, me tengo que ir a otro supermercado.",quiebre_stock,negativo
+R086,2026-09-15,yogur,"Excelente variedad de yogur, siempre fresco.",positivo,positivo
+R015,2026-09-17,queso,"Hace semanas que no encuentro queso, siempre esta agotado.",quiebre_stock,negativo
+R022,2026-09-19,pan,Vine tres veces y nunca hay pan en la gondola.,quiebre_stock,negativo
+R060,2026-09-20,huevos,"Felicitaciones, el huevos siempre esta bien surtido.",positivo,positivo
+R038,2026-09-22,aceite,Llevo un mes buscando aceite y jamas hay stock.,quiebre_stock,negativo
+R007,2026-09-23,yogur,El yogur que compre estaba vencido.,calidad,negativo
+R002,2026-09-24,arroz,"El arroz esta permanentemente sin reposicion, muy molesto.",quiebre_stock,negativo
+R005,2026-09-26,cereal,El cereal esta mucho mas caro que en la competencia.,precio,negativo
+R083,2026-09-26,detergente,Llevo un mes buscando detergente y jamas hay stock.,quiebre_stock,negativo
+R021,2026-09-28,cereal,Vine tres veces y nunca hay cereal en la gondola.,quiebre_stock,negativo
+R033,2026-09-28,leche,"Excelente variedad de leche, siempre fresco.",positivo,positivo
+R014,2026-09-29,huevos,"Hace semanas que no encuentro huevos, siempre esta agotado.",quiebre_stock,negativo
+R084,2026-09-29,galletas,"Hace semanas que no encuentro galletas, siempre esta agotado.",quiebre_stock,negativo
+R090,2026-10-01,pan,"Hace semanas que no encuentro pan, siempre esta agotado.",quiebre_stock,negativo
+R010,2026-10-03,bebida cola,"Otra vez sin bebida cola, es imposible comprarlo en esta tienda.",quiebre_stock,negativo
+R072,2026-10-03,aceite,"Hace semanas que no encuentro aceite, siempre esta agotado.",quiebre_stock,negativo
+R068,2026-10-04,cafe,"Hace semanas que no encuentro cafe, siempre esta agotado.",quiebre_stock,negativo
+R074,2026-10-04,mantequilla,"Muy buena atencion, encontre el mantequilla al tiro.",positivo,positivo
+R013,2026-10-05,atun en lata,"Otra vez sin atun en lata, es imposible comprarlo en esta tienda.",quiebre_stock,negativo
+R012,2026-10-06,agua mineral,El agua mineral que compre estaba vencido.,calidad,negativo
+R048,2026-10-06,leche,Llevo un mes buscando leche y jamas hay stock.,quiebre_stock,negativo
+R019,2026-10-07,huevos,El huevos esta mucho mas caro que en la competencia.,precio,negativo
+R052,2026-10-07,papel higienico,Vine tres veces y nunca hay papel higienico en la gondola.,quiebre_stock,negativo
+R004,2026-10-09,cafe,Vine tres veces y nunca hay cafe en la gondola.,quiebre_stock,negativo
+R036,2026-10-09,yogur,"Muy buena atencion, encontre el yogur al tiro.",positivo,positivo
+R051,2026-10-09,jamon,"Excelente variedad de jamon, siempre fresco.",positivo,positivo
+R071,2026-10-09,aceite,"Pesima atencion, nadie supo decirme donde estaba el aceite.",atencion,negativo
+R029,2026-10-10,fideos,Llevo un mes buscando fideos y jamas hay stock.,quiebre_stock,negativo
+R039,2026-10-10,leche,Me encanta que siempre haya leche en oferta.,positivo,positivo
+R089,2026-10-10,yogur,Llevo un mes buscando yogur y jamas hay stock.,quiebre_stock,negativo
+R053,2026-10-11,mantequilla,Llevo un mes buscando mantequilla y jamas hay stock.,quiebre_stock,negativo
+R011,2026-10-12,pan,"El pan esta permanentemente sin reposicion, muy molesto.",quiebre_stock,negativo
+R079,2026-10-12,huevos,"Excelente variedad de huevos, siempre fresco.",positivo,positivo
+R055,2026-10-14,cerveza,"Otra vez sin cerveza, es imposible comprarlo en esta tienda.",quiebre_stock,negativo
+R066,2026-10-14,detergente,"Otra vez sin detergente, es imposible comprarlo en esta tienda.",quiebre_stock,negativo
+R063,2026-10-15,azucar,"Muy buena atencion, encontre el azucar al tiro.",positivo,positivo
+R075,2026-10-15,atun en lata,El atun en lata que compre estaba vencido.,calidad,negativo
+R045,2026-10-16,cafe,Me encanta que siempre haya cafe en oferta.,positivo,positivo
+R020,2026-10-17,aceite,Los precios del aceite son un abuso ultimamente.,precio,negativo
+R031,2026-10-17,cerveza,El cerveza subio demasiado de precio este mes.,precio,negativo
+R065,2026-10-17,agua mineral,"Hace semanas que no encuentro agua mineral, siempre esta agotado.",quiebre_stock,negativo
+R017,2026-10-18,bebida cola,"Compre bebida cola en mal estado, tuve que botarlo.",calidad,negativo
+R028,2026-10-18,cerveza,Los precios del cerveza son un abuso ultimamente.,precio,negativo
+R082,2026-10-18,huevos,"Muy buena atencion, encontre el huevos al tiro.",positivo,positivo
+R088,2026-10-20,cafe,"El cafe esta permanentemente sin reposicion, muy molesto.",quiebre_stock,negativo
+R024,2026-10-21,mantequilla,"El mantequilla esta permanentemente sin reposicion, muy molesto.",quiebre_stock,negativo
+R078,2026-10-21,queso,"Nunca tienen queso, me tengo que ir a otro supermercado.",quiebre_stock,negativo
+R008,2026-10-24,cerveza,El cajero fue grosero cuando pregunte por el cerveza.,atencion,negativo
+R016,2026-10-24,arroz,"Nunca tienen arroz, me tengo que ir a otro supermercado.",quiebre_stock,negativo
+R023,2026-10-24,jamon,"Nunca tienen jamon, me tengo que ir a otro supermercado.",quiebre_stock,negativo
+R087,2026-10-24,cereal,Vine tres veces y nunca hay cereal en la gondola.,quiebre_stock,negativo
+R026,2026-10-25,detergente,"Muy buena atencion, encontre el detergente al tiro.",positivo,positivo
+R027,2026-10-25,cereal,Llevo un mes buscando cereal y jamas hay stock.,quiebre_stock,negativo
+R032,2026-10-25,detergente,Llevo un mes buscando detergente y jamas hay stock.,quiebre_stock,negativo
+R043,2026-10-25,cereal,El cereal esta mucho mas caro que en la competencia.,precio,negativo
+R077,2026-10-25,jamon,Vine tres veces y nunca hay jamon en la gondola.,quiebre_stock,negativo
+R001,2026-10-26,leche,Me cobraron el leche mas caro que el precio marcado en gondola.,precio,negativo
+R040,2026-10-26,bebida cola,"Otra vez sin bebida cola, es imposible comprarlo en esta tienda.",quiebre_stock,negativo
+R057,2026-10-26,jamon,El jamon que compre estaba vencido.,calidad,negativo
+R059,2026-10-26,yogur,"El yogur tenia mal sabor, parecia viejo.",calidad,negativo
+R006,2026-10-27,cereal,Los precios del cereal son un abuso ultimamente.,precio,negativo
+R047,2026-10-27,arroz,"Compre arroz en mal estado, tuve que botarlo.",calidad,negativo
+R044,2026-10-28,atun en lata,"El atun en lata tenia mal sabor, parecia viejo.",calidad,negativo
+R054,2026-10-29,papel higienico,"Nunca tienen papel higienico, me tengo que ir a otro supermercado.",quiebre_stock,negativo
+R030,2026-11-01,pan,"Hace semanas que no encuentro pan, siempre esta agotado.",quiebre_stock,negativo
+R037,2026-11-01,queso,"Muy buena atencion, encontre el queso al tiro.",positivo,positivo
+R067,2026-11-01,cereal,Los precios del cereal son un abuso ultimamente.,precio,negativo
+R042,2026-11-02,huevos,El huevos esta mucho mas caro que en la competencia.,precio,negativo
+R058,2026-11-02,cereal,"Nunca tienen cereal, me tengo que ir a otro supermercado.",quiebre_stock,negativo
+R081,2026-11-02,galletas,El galletas venia con el envase roto y aplastado.,calidad,negativo
+R034,2026-11-03,yogur,Me encanta que siempre haya yogur en oferta.,positivo,positivo
+R073,2026-11-03,azucar,"Nunca tienen azucar, me tengo que ir a otro supermercado.",quiebre_stock,negativo
+R009,2026-11-05,jamon,"Hace semanas que no encuentro jamon, siempre esta agotado.",quiebre_stock,negativo
+R041,2026-11-05,mantequilla,"Hace semanas que no encuentro mantequilla, siempre esta agotado.",quiebre_stock,negativo
+R062,2026-11-05,cereal,El cereal subio demasiado de precio este mes.,precio,negativo
+R049,2026-11-06,azucar,"Hace semanas que no encuentro azucar, siempre esta agotado.",quiebre_stock,negativo
+R050,2026-11-06,pan,El pan esta mucho mas caro que en la competencia.,precio,negativo
+R080,2026-11-06,mantequilla,El mantequilla subio demasiado de precio este mes.,precio,negativo
+R056,2026-11-07,pan,El pan que compre estaba vencido.,calidad,negativo
+R061,2026-11-07,cereal,"Pesima atencion, nadie supo decirme donde estaba el cereal.",atencion,negativo
+R069,2026-11-07,pan,Me cobraron el pan mas caro que el precio marcado en gondola.,precio,negativo
+R003,2026-11-08,huevos,"Felicitaciones, el huevos siempre esta bien surtido.",positivo,positivo
+R035,2026-11-10,aceite,"Nunca tienen aceite, me tengo que ir a otro supermercado.",quiebre_stock,negativo

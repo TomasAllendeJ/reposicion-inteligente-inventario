@@ -1,0 +1,332 @@
+<title>Tablero Reposicion CA_1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  /* Layout: tablero de una pagina, cabecera fija + grilla de tarjetas y secciones */
+  :root {
+    --bg: #eef1f4; --surface: #ffffff; --surface-2: #f5f7f9; --fg: #16202b;
+    --muted: #5b6672; --border: #dde3ea; --accent: #2a9d8f; --navy: #0f2444;
+    --good: #2a9d8f; --warn: #d98a0b; --crit: #d1495b;
+    --font-head: "Space Grotesk", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e141b; --surface: #161e27; --surface-2: #1b2530; --fg: #e8edf2;
+      --muted: #9aa7b4; --border: #263241; --accent: #39b3a3; --navy: #cfe0f2;
+      --good: #39b3a3; --warn: #e3a53a; --crit: #e46275; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e141b; --surface: #161e27; --surface-2: #1b2530; --fg: #e8edf2;
+    --muted: #9aa7b4; --border: #263241; --accent: #39b3a3; --navy: #cfe0f2;
+    --good: #39b3a3; --warn: #e3a53a; --crit: #e46275; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); line-height: 1.5; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0; }
+  header.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--navy); color: #fff; }
+  :root[data-theme="dark"] header.bar, :root:not([data-theme="light"]) header.bar { background: #0a1220; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--navy); z-index: 10; }
+  .bar .wrap { display: flex; align-items: center; gap: 12px; padding-block: 14px; flex-wrap: wrap; }
+  .bar h1 { font-family: var(--font-head); font-size: 1.15rem; margin: 0; font-weight: 600; letter-spacing: .2px; }
+  .bar h1 .lead { color: var(--accent); }
+  :root header.bar h1 .lead { color: #7fd8cc; }
+  .bar .sub { color: #bcd0e8; font-size: .82rem; margin-left: auto; }
+  .toggle { background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.2); border-radius: 8px; padding: 6px 10px; font-size: .8rem; cursor: pointer; font-family: inherit; }
+  main { padding-block: 22px 40px; }
+  h2.sec { font-family: var(--font-head); font-size: 1.05rem; font-weight: 600; margin: 30px 0 4px; display: flex; align-items: center; gap: 9px; }
+  h2.sec .tag { font-size: .62rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--accent); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; }
+  p.lead { color: var(--muted); margin: 2px 0 14px; font-size: .9rem; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .kpi .v { font-family: var(--font-head); font-size: 1.9rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .kpi .l { color: var(--muted); font-size: .78rem; margin-top: 3px; }
+  .kpi .cap { font-size: .68rem; color: var(--accent); margin-top: 6px; font-weight: 600; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; min-width: 0; }
+  .card h3 { font-family: var(--font-head); font-size: .95rem; margin: 0 0 2px; font-weight: 600; }
+  .card .hint { color: var(--muted); font-size: .78rem; margin: 0 0 10px; }
+  .chartbox { position: relative; height: 240px; }
+  .winner { display: inline-block; font-size: .72rem; font-weight: 600; color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); border-radius: 6px; padding: 2px 8px; margin-top: 10px; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+  th, td { padding: 9px 12px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { background: var(--surface-2); color: var(--muted); font-weight: 600; font-size: .72rem; text-transform: uppercase; letter-spacing: .4px; position: sticky; top: 0; }
+  tbody tr { border-top: 1px solid var(--border); }
+  tbody tr:hover { background: var(--surface-2); }
+  .pill { display: inline-block; font-size: .72rem; font-weight: 600; padding: 2px 9px; border-radius: 999px; }
+  .pill.alta { color: #fff; background: var(--crit); }
+  .pill.media { color: #3a2a00; background: var(--warn); }
+  .pill.baja { color: var(--muted); background: var(--surface-2); border: 1px solid var(--border); }
+  :root[data-theme="dark"] .pill.baja, :root:not([data-theme="light"]) .pill.baja { color: var(--muted); }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 2px 0 12px; }
+  .filters button { font-family: inherit; font-size: .8rem; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--fg); cursor: pointer; }
+  .filters button.on { background: var(--accent); color: #042c27; border-color: var(--accent); font-weight: 600; }
+  .yes { color: var(--good); font-weight: 600; }
+  .no { color: var(--muted); }
+  footer { color: var(--muted); font-size: .78rem; border-top: 1px solid var(--border); margin-top: 34px; padding-block: 18px 6px; }
+  footer code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+  @media (max-width: 520px) { .bar .sub { margin-left: 0; width: 100%; } }
+</style>
+
+<header class="bar">
+  <div class="wrap">
+    <h1><span class="lead">Reposicion</span> inteligente &middot; Tienda CA_1</h1>
+    <span class="sub" id="gen"></span>
+    <button class="toggle" id="themeBtn" aria-label="Cambiar tema">Tema</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="lead" style="margin-top:4px">Sistema del Hito 2: pronostico de demanda (LSTM), reconocimiento de productos (ViT) y analisis de reclamos (Transformer), integrados en una recomendacion diaria de reposicion. Datos reales M5 Walmart + reclamos simulados.</p>
+
+  <div class="kpis" id="kpis"></div>
+
+  <h2 class="sec"><span class="tag">Serie temporal</span> Pronostico de demanda</h2>
+  <p class="lead">El modelo de Deep Learning (LSTM) mejora el error respecto al clasico Holt-Winters y a los baselines. Menor MAE = mejor.</p>
+  <div class="cards">
+    <div class="card">
+      <h3>Comparacion de modelos (MAE)</h3>
+      <p class="hint">Error absoluto medio sobre 28 dias de test, promedio de los 20 SKU.</p>
+      <div class="chartbox"><canvas id="maeChart"></canvas></div>
+      <span class="winner" id="maeWin"></span>
+    </div>
+    <div class="card">
+      <h3>Pronostico a 7 dias &middot; FOODS_3_064</h3>
+      <p class="hint">Historia reciente y demanda proyectada por el LSTM.</p>
+      <div class="chartbox"><canvas id="foreChart"></canvas></div>
+    </div>
+  </div>
+
+  <h2 class="sec"><span class="tag">Imagenes</span> Reconocimiento de productos</h2>
+  <p class="lead">Modelos preentrenados usados como extractores de caracteristicas. El Vision Transformer gana a la CNN y ambos aplastan al baseline por color.</p>
+  <div class="cards">
+    <div class="card">
+      <h3>Accuracy por modelo</h3>
+      <p class="hint">Grocery Store Dataset, 43 clases, 2.485 imagenes de test.</p>
+      <div class="chartbox"><canvas id="imgChart"></canvas></div>
+      <span class="winner" id="imgWin"></span>
+    </div>
+    <div class="card">
+      <h3>Texto &middot; clasificacion de reclamos</h3>
+      <p class="hint">El Transformer (embeddings) entiende el significado; le gana a las reglas por palabra clave.</p>
+      <div class="chartbox"><canvas id="nlpChart"></canvas></div>
+    </div>
+  </div>
+
+  <h2 class="sec"><span class="tag">Reclamos</span> Presion de quiebre por producto</h2>
+  <p class="lead">Senal del analisis de texto: productos con mas reclamos de "siempre agotado". Sube la prioridad de reposicion.</p>
+  <div class="card">
+    <div class="chartbox" style="height:320px"><canvas id="presChart"></canvas></div>
+  </div>
+
+  <h2 class="sec"><span class="tag">Decision</span> Recomendacion de reposicion</h2>
+  <p class="lead">Por cada producto: demanda proyectada (7 dias), stock, punto de reorden y accion sugerida. Esta es la base que Claude redacta como recomendacion priorizada.</p>
+  <div class="filters" id="filters">
+    <button data-f="todos" class="on">Todos (20)</button>
+    <button data-f="reponer">Solo a reponer</button>
+    <button data-f="alta">Prioridad alta</button>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th>SKU</th><th>Demanda 7d</th><th>Prom/dia</th><th>Stock</th>
+        <th>Punto reorden</th><th>Reponer</th><th>Cant. sugerida</th><th>Prioridad</th>
+      </tr></thead>
+      <tbody id="repoBody"></tbody>
+    </table>
+  </div>
+
+  <h2 class="sec"><span class="tag">Negocio</span> Retorno estimado (ROI)</h2>
+  <p class="lead">Estimacion con supuestos explicitos y conservadores (CLP/mes), no datos financieros reales. Mide el orden de magnitud: quiebres evitados + horas ahorradas vs. costo de operar.</p>
+  <div class="kpis">
+    <div class="kpi"><div class="v">$259.607</div><div class="l">Beneficio / mes</div><div class="cap">quiebres evitados + horas</div></div>
+    <div class="kpi"><div class="v">$26.000</div><div class="l">Costo de operar / mes</div><div class="cap">hosting + mantencion</div></div>
+    <div class="kpi"><div class="v">$233.607</div><div class="l">Neto / mes</div><div class="cap">~$2,8 M al ano</div></div>
+    <div class="kpi"><div class="v">9&times;</div><div class="l">ROI mensual</div><div class="cap">IA via gateway (sin costo)</div></div>
+  </div>
+  <p class="lead" style="margin-top:12px">Riesgos y controles: error del modelo &rarr; comparado con baseline + marca de revision humana; alucinaciones del LLM &rarr; recibe solo resultados calculados, salida JSON y RAG que cita la fuente; accion automatica &rarr; <strong>aprobacion humana por Telegram</strong> antes de actuar; datos sensibles &rarr; flujo sin credenciales y reclamos simulados.</p>
+
+  <footer>
+    Fuentes: ventas reales <strong>M5 Forecasting (Walmart)</strong>, tienda CA_1, 20 SKU &middot; imagenes <strong>Grocery Store Dataset</strong> &middot; reclamos simulados (supuesto documentado). Pronostico con LSTM; punto de reorden = demanda proyectada en el lead time de 7 dias. Stock actual simulado. Generado por el pipeline del proyecto (<code>07_tablero_datos.py</code>).
+  </footer>
+</main>
+
+<script>
+const DATA = {
+  "generado":"2026-11-10",
+  "kpis":{"n_sku":20,"n_reponer":14,"n_prioridad_alta":11,"mae_lstm":6.461,"mae_holtwinters":7.34,"acc_vit":0.8684,"acc_nlp":0.963},
+  "serie":{"mae":{"MAE_media_movil":7.912,"MAE_naive":8.064,"MAE_holtwinters":7.34,"MAE_LSTM":6.461,"MAE_GRU":6.578},
+    "ejemplo":{"sku":"FOODS_3_064","pronostico":[25.7,26.1,27.4,29.8,34.1,37.8,32.4],"historia":[27,23,18,18,35,38,30,27,31,16,23,33,39,45,20,23,32,32,27,29,23]},"gana_dl_vs_hw":14},
+  "imagen":[{"enfoque":"ViT","accuracy":0.8684},{"enfoque":"ResNet50","accuracy":0.8483},{"enfoque":"Baseline color","accuracy":0.3175}],
+  "nlp":{"reglas":{"accuracy":0.889,"f1":0.702},"transformer":{"accuracy":0.963,"f1":0.771},
+    "presion":{"papel higienico":4,"pan":4,"cereal":4,"aceite":3,"detergente":3,"cafe":3,"mantequilla":3,"jamon":3,"yogur":2,"queso":2,"arroz":2,"bebida cola":2,"azucar":2,"huevos":1,"galletas":1,"atun en lata":1,"leche":1,"fideos":1,"cerveza":1,"agua mineral":1}},
+  "reposicion":[
+    {"item_id":"FOODS_2_019","demanda_7d":108.7,"demanda_prom_dia":15.5,"stock_actual":41,"punto_reorden":108.7,"reponer":true,"cantidad_sugerida":68,"prioridad":"media"},
+    {"item_id":"FOODS_2_197","demanda_7d":156.1,"demanda_prom_dia":22.3,"stock_actual":107,"punto_reorden":156.1,"reponer":true,"cantidad_sugerida":49,"prioridad":"alta"},
+    {"item_id":"FOODS_3_064","demanda_7d":213.3,"demanda_prom_dia":30.5,"stock_actual":213,"punto_reorden":213.3,"reponer":true,"cantidad_sugerida":0,"prioridad":"alta"},
+    {"item_id":"FOODS_3_080","demanda_7d":138.3,"demanda_prom_dia":19.8,"stock_actual":225,"punto_reorden":138.3,"reponer":false,"cantidad_sugerida":0,"prioridad":"baja"},
+    {"item_id":"FOODS_3_090","demanda_7d":474.6,"demanda_prom_dia":67.8,"stock_actual":159,"punto_reorden":474.6,"reponer":true,"cantidad_sugerida":316,"prioridad":"alta"},
+    {"item_id":"FOODS_3_099","demanda_7d":121.7,"demanda_prom_dia":17.4,"stock_actual":83,"punto_reorden":121.7,"reponer":true,"cantidad_sugerida":39,"prioridad":"media"},
+    {"item_id":"FOODS_3_120","demanda_7d":399.8,"demanda_prom_dia":57.1,"stock_actual":378,"punto_reorden":399.8,"reponer":true,"cantidad_sugerida":22,"prioridad":"alta"},
+    {"item_id":"FOODS_3_252","demanda_7d":303.3,"demanda_prom_dia":43.3,"stock_actual":465,"punto_reorden":303.3,"reponer":false,"cantidad_sugerida":0,"prioridad":"baja"},
+    {"item_id":"FOODS_3_282","demanda_7d":173.9,"demanda_prom_dia":24.8,"stock_actual":56,"punto_reorden":173.9,"reponer":true,"cantidad_sugerida":118,"prioridad":"alta"},
+    {"item_id":"FOODS_3_295","demanda_7d":185.2,"demanda_prom_dia":26.5,"stock_actual":132,"punto_reorden":185.2,"reponer":true,"cantidad_sugerida":53,"prioridad":"alta"},
+    {"item_id":"FOODS_3_499","demanda_7d":83.3,"demanda_prom_dia":11.9,"stock_actual":95,"punto_reorden":83.3,"reponer":false,"cantidad_sugerida":0,"prioridad":"baja"},
+    {"item_id":"FOODS_3_501","demanda_7d":193.5,"demanda_prom_dia":27.6,"stock_actual":283,"punto_reorden":193.5,"reponer":false,"cantidad_sugerida":0,"prioridad":"baja"},
+    {"item_id":"FOODS_3_511","demanda_7d":197.3,"demanda_prom_dia":28.2,"stock_actual":74,"punto_reorden":197.3,"reponer":true,"cantidad_sugerida":123,"prioridad":"alta"},
+    {"item_id":"FOODS_3_555","demanda_7d":157.8,"demanda_prom_dia":22.5,"stock_actual":109,"punto_reorden":157.8,"reponer":true,"cantidad_sugerida":49,"prioridad":"alta"},
+    {"item_id":"FOODS_3_586","demanda_7d":298.4,"demanda_prom_dia":42.6,"stock_actual":291,"punto_reorden":298.4,"reponer":true,"cantidad_sugerida":7,"prioridad":"alta"},
+    {"item_id":"FOODS_3_587","demanda_7d":220.6,"demanda_prom_dia":31.5,"stock_actual":420,"punto_reorden":220.6,"reponer":false,"cantidad_sugerida":0,"prioridad":"baja"},
+    {"item_id":"FOODS_3_681","demanda_7d":162.5,"demanda_prom_dia":23.2,"stock_actual":66,"punto_reorden":162.5,"reponer":true,"cantidad_sugerida":96,"prioridad":"alta"},
+    {"item_id":"FOODS_3_714","demanda_7d":159.9,"demanda_prom_dia":22.8,"stock_actual":94,"punto_reorden":159.9,"reponer":true,"cantidad_sugerida":66,"prioridad":"alta"},
+    {"item_id":"FOODS_3_739","demanda_7d":84.7,"demanda_prom_dia":12.1,"stock_actual":80,"punto_reorden":84.7,"reponer":true,"cantidad_sugerida":5,"prioridad":"media"},
+    {"item_id":"FOODS_3_741","demanda_7d":122.9,"demanda_prom_dia":17.6,"stock_actual":183,"punto_reorden":122.9,"reponer":false,"cantidad_sugerida":0,"prioridad":"baja"}
+  ]
+};
+
+document.getElementById('gen').textContent = 'Generado ' + DATA.generado;
+
+// ---- KPIs ----
+const k = DATA.kpis;
+const kpiDefs = [
+  { v: k.n_sku, l: 'SKU analizados', cap: 'tienda CA_1' },
+  { v: k.n_reponer, l: 'Productos a reponer', cap: k.n_prioridad_alta + ' urgentes' },
+  { v: k.mae_lstm, l: 'MAE del LSTM', cap: 'vs ' + k.mae_holtwinters + ' Holt-Winters' },
+  { v: (k.acc_vit*100).toFixed(0) + '%', l: 'Accuracy imagenes (ViT)', cap: 'reconocimiento de productos' },
+  { v: (k.acc_nlp*100).toFixed(0) + '%', l: 'Accuracy reclamos (NLP)', cap: 'clasificacion de texto' }
+];
+document.getElementById('kpis').innerHTML = kpiDefs.map(function(d){
+  return '<div class="kpi"><div class="v">'+d.v+'</div><div class="l">'+d.l+'</div><div class="cap">'+d.cap+'</div></div>';
+}).join('');
+
+// ---- Tabla reposicion ----
+const ordenP = { alta: 0, media: 1, baja: 2 };
+const repos = DATA.reposicion.slice().sort(function(a,b){
+  if (ordenP[a.prioridad] !== ordenP[b.prioridad]) return ordenP[a.prioridad] - ordenP[b.prioridad];
+  return b.cantidad_sugerida - a.cantidad_sugerida;
+});
+function renderTabla(f){
+  const rows = repos.filter(function(r){
+    if (f === 'reponer') return r.reponer;
+    if (f === 'alta') return r.prioridad === 'alta';
+    return true;
+  });
+  document.getElementById('repoBody').innerHTML = rows.map(function(r){
+    return '<tr><td>'+r.item_id+'</td><td>'+r.demanda_7d.toFixed(0)+'</td><td>'+r.demanda_prom_dia.toFixed(1)+
+      '</td><td>'+r.stock_actual+'</td><td>'+r.punto_reorden.toFixed(0)+
+      '</td><td class="'+(r.reponer?'yes':'no')+'">'+(r.reponer?'Si':'No')+
+      '</td><td>'+(r.cantidad_sugerida>0?r.cantidad_sugerida:'—')+
+      '</td><td><span class="pill '+r.prioridad+'">'+r.prioridad+'</span></td></tr>';
+  }).join('');
+}
+renderTabla('todos');
+document.querySelectorAll('#filters button').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('#filters button').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+    renderTabla(btn.getAttribute('data-f'));
+  });
+});
+
+// ---- Charts ----
+let charts = [];
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function buildCharts(){
+  charts.forEach(function(c){ c.destroy(); });
+  charts = [];
+  const fg = css('--fg'), muted = css('--muted'), grid = css('--border');
+  const accent = css('--accent'), crit = css('--crit'), warn = css('--warn'), navy = css('--navy');
+  Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+  Chart.defaults.color = muted;
+  const gridCfg = { color: grid, drawBorder: false };
+
+  // MAE
+  const mae = DATA.serie.mae;
+  const maeLabels = ['Media movil','Naive','Holt-Winters','GRU','LSTM'];
+  const maeVals = [mae.MAE_media_movil, mae.MAE_naive, mae.MAE_holtwinters, mae.MAE_GRU, mae.MAE_LSTM];
+  const minIdx = maeVals.indexOf(Math.min.apply(null, maeVals));
+  charts.push(new Chart(document.getElementById('maeChart'), {
+    type: 'bar',
+    data: { labels: maeLabels, datasets: [{ data: maeVals,
+      backgroundColor: maeVals.map(function(_,i){ return i===minIdx ? accent : (muted+'66'); }),
+      borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, grid: gridCfg, ticks: { color: muted } }, x: { grid: { display: false }, ticks: { color: fg } } } }
+  }));
+  document.getElementById('maeWin').textContent = 'LSTM gana al clasico en ' + DATA.serie.gana_dl_vs_hw + '/20 SKU';
+
+  // Forecast
+  const ej = DATA.serie.ejemplo;
+  const hist = ej.historia, pron = ej.pronostico;
+  const labels = []; for (let i=1; i<=hist.length+pron.length; i++) labels.push('d'+i);
+  const dHist = hist.concat(new Array(pron.length).fill(null));
+  const dPron = new Array(hist.length-1).fill(null).concat([hist[hist.length-1]]).concat(pron);
+  charts.push(new Chart(document.getElementById('foreChart'), {
+    type: 'line',
+    data: { labels: labels, datasets: [
+      { label: 'Historia', data: dHist, borderColor: muted, backgroundColor: 'transparent', tension: .3, pointRadius: 0, borderWidth: 2 },
+      { label: 'Pronostico LSTM', data: dPron, borderColor: accent, backgroundColor: accent+'22', borderDash: [6,4], tension: .3, pointRadius: 2, fill: true, borderWidth: 2 }
+    ] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: fg, boxWidth: 12 } } },
+      scales: { y: { beginAtZero: true, grid: gridCfg, ticks: { color: muted } }, x: { grid: { display: false }, ticks: { color: muted, maxTicksLimit: 8 } } } }
+  }));
+
+  // Imagen
+  const img = DATA.imagen;
+  const imgMax = Math.max.apply(null, img.map(function(x){ return x.accuracy; }));
+  charts.push(new Chart(document.getElementById('imgChart'), {
+    type: 'bar',
+    data: { labels: img.map(function(x){ return x.enfoque; }), datasets: [{ data: img.map(function(x){ return x.accuracy; }),
+      backgroundColor: img.map(function(x){ return x.accuracy===imgMax ? accent : (muted+'66'); }), borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: function(c){ return (c.parsed.y*100).toFixed(1)+'%'; } } } },
+      scales: { y: { beginAtZero: true, max: 1, grid: gridCfg, ticks: { color: muted, callback: function(v){ return (v*100)+'%'; } } }, x: { grid: { display: false }, ticks: { color: fg } } } }
+  }));
+  document.getElementById('imgWin').textContent = 'Gana el ViT (' + (imgMax*100).toFixed(0) + '%)';
+
+  // NLP
+  const nlp = DATA.nlp;
+  charts.push(new Chart(document.getElementById('nlpChart'), {
+    type: 'bar',
+    data: { labels: ['Accuracy','F1 macro'], datasets: [
+      { label: 'Reglas (baseline)', data: [nlp.reglas.accuracy, nlp.reglas.f1], backgroundColor: muted+'66', borderRadius: 6 },
+      { label: 'Transformer', data: [nlp.transformer.accuracy, nlp.transformer.f1], backgroundColor: accent, borderRadius: 6 }
+    ] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: fg, boxWidth: 12 } }, tooltip: { callbacks: { label: function(c){ return c.dataset.label+': '+(c.parsed.y*100).toFixed(1)+'%'; } } } },
+      scales: { y: { beginAtZero: true, max: 1, grid: gridCfg, ticks: { color: muted, callback: function(v){ return (v*100)+'%'; } } }, x: { grid: { display: false }, ticks: { color: fg } } } }
+  }));
+
+  // Presion
+  const pres = DATA.nlp.presion;
+  const pk = Object.keys(pres);
+  charts.push(new Chart(document.getElementById('presChart'), {
+    type: 'bar',
+    data: { labels: pk, datasets: [{ data: pk.map(function(x){ return pres[x]; }),
+      backgroundColor: pk.map(function(x){ return pres[x]>=3 ? crit : (pres[x]===2 ? warn : (muted+'88')); }), borderRadius: 5 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, grid: gridCfg, ticks: { color: muted, precision: 0 } }, y: { grid: { display: false }, ticks: { color: fg, font: { size: 11 } } } } }
+  }));
+}
+buildCharts();
+
+// ---- Tema ----
+const root = document.documentElement;
+const btn = document.getElementById('themeBtn');
+function current(){ return root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
+try { const s = localStorage.getItem('tema'); if (s) root.setAttribute('data-theme', s); } catch(e) {}
+btn.addEventListener('click', function(){
+  const next = current()==='dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  try { localStorage.setItem('tema', next); } catch(e) {}
+  buildCharts();
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){ if (!root.getAttribute('data-theme')) buildCharts(); });
+</script>

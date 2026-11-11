@@ -1,0 +1,316 @@
+{
+  "generado": "2026-11-10",
+  "kpis": {
+    "n_sku": 20,
+    "n_reponer": 14,
+    "n_prioridad_alta": 11,
+    "mae_lstm": 6.461,
+    "mae_holtwinters": 7.34,
+    "acc_vit": 0.8684,
+    "acc_nlp": 0.963
+  },
+  "serie": {
+    "mae": {
+      "MAE_media_movil": 7.912,
+      "MAE_naive": 8.064,
+      "MAE_holtwinters": 7.34,
+      "MAE_LSTM": 6.461,
+      "MAE_GRU": 6.578
+    },
+    "ejemplo": {
+      "sku": "FOODS_3_064",
+      "pronostico": [
+        25.7,
+        26.1,
+        27.4,
+        29.8,
+        34.1,
+        37.8,
+        32.4
+      ],
+      "historia": [
+        27.0,
+        23.0,
+        18.0,
+        18.0,
+        35.0,
+        38.0,
+        30.0,
+        27.0,
+        31.0,
+        16.0,
+        23.0,
+        33.0,
+        39.0,
+        45.0,
+        20.0,
+        23.0,
+        32.0,
+        32.0,
+        27.0,
+        29.0,
+        23.0
+      ]
+    },
+    "gana_dl_vs_hw": 14
+  },
+  "imagen": [
+    {
+      "enfoque": "Transformer de vision (ViT)",
+      "backbone": "vit_b_16",
+      "accuracy": 0.8684,
+      "f1_macro": 0.8122,
+      "dim": 768
+    },
+    {
+      "enfoque": "CNN preentrenada (ResNet50)",
+      "backbone": "resnet50",
+      "accuracy": 0.8483,
+      "f1_macro": 0.7809,
+      "dim": 2048
+    },
+    {
+      "enfoque": "Baseline (histograma de color)",
+      "backbone": "baseline_hist",
+      "accuracy": 0.3175,
+      "f1_macro": 0.2233,
+      "dim": 96
+    }
+  ],
+  "nlp": {
+    "clasificacion": {
+      "baseline_reglas": {
+        "accuracy": 0.889,
+        "f1_macro": 0.702
+      },
+      "transformer_embeddings": {
+        "accuracy": 0.963,
+        "f1_macro": 0.771
+      }
+    },
+    "presion": {
+      "papel higienico": 4,
+      "pan": 4,
+      "cereal": 4,
+      "aceite": 3,
+      "detergente": 3,
+      "cafe": 3,
+      "mantequilla": 3,
+      "jamon": 3,
+      "yogur": 2,
+      "queso": 2,
+      "arroz": 2,
+      "bebida cola": 2,
+      "azucar": 2,
+      "huevos": 1,
+      "galletas": 1,
+      "atun en lata": 1,
+      "leche": 1,
+      "fideos": 1,
+      "cerveza": 1,
+      "agua mineral": 1
+    }
+  },
+  "reposicion": [
+    {
+      "item_id": "FOODS_2_019",
+      "demanda_7d": 108.7,
+      "demanda_prom_dia": 15.5,
+      "stock_actual": 41,
+      "punto_reorden": 108.7,
+      "reponer": true,
+      "cantidad_sugerida": 68,
+      "prioridad": "media"
+    },
+    {
+      "item_id": "FOODS_2_197",
+      "demanda_7d": 156.1,
+      "demanda_prom_dia": 22.3,
+      "stock_actual": 107,
+      "punto_reorden": 156.1,
+      "reponer": true,
+      "cantidad_sugerida": 49,
+      "prioridad": "alta"
+    },
+    {
+      "item_id": "FOODS_3_064",
+      "demanda_7d": 213.3,
+      "demanda_prom_dia": 30.5,
+      "stock_actual": 213,
+      "punto_reorden": 213.3,
+      "reponer": true,
+      "cantidad_sugerida": 0,
+      "prioridad": "alta"
+    },
+    {
+      "item_id": "FOODS_3_080",
+      "demanda_7d": 138.3,
+      "demanda_prom_dia": 19.8,
+      "stock_actual": 225,
+      "punto_reorden": 138.3,
+      "reponer": false,
+      "cantidad_sugerida": 0,
+      "prioridad": "baja"
+    },
+    {
+      "item_id": "FOODS_3_090",
+      "demanda_7d": 474.6,
+      "demanda_prom_dia": 67.8,
+      "stock_actual": 159,
+      "punto_reorden": 474.6,
+      "reponer": true,
+      "cantidad_sugerida": 316,
+      "prioridad": "alta"
+    },
+    {
+      "item_id": "FOODS_3_099",
+      "demanda_7d": 121.7,
+      "demanda_prom_dia": 17.4,
+      "stock_actual": 83,
+      "punto_reorden": 121.7,
+      "reponer": true,
+      "cantidad_sugerida": 39,
+      "prioridad": "media"
+    },
+    {
+      "item_id": "FOODS_3_120",
+      "demanda_7d": 399.8,
+      "demanda_prom_dia": 57.1,
+      "stock_actual": 378,
+      "punto_reorden": 399.8,
+      "reponer": true,
+      "cantidad_sugerida": 22,
+      "prioridad": "alta"
+    },
+    {
+      "item_id": "FOODS_3_252",
+      "demanda_7d": 303.3,
+      "demanda_prom_dia": 43.3,
+      "stock_actual": 465,
+      "punto_reorden": 303.3,
+      "reponer": false,
+      "cantidad_sugerida": 0,
+      "prioridad": "baja"
+    },
+    {
+      "item_id": "FOODS_3_282",
+      "demanda_7d": 173.9,
+      "demanda_prom_dia": 24.8,
+      "stock_actual": 56,
+      "punto_reorden": 173.9,
+      "reponer": true,
+      "cantidad_sugerida": 118,
+      "prioridad": "alta"
+    },
+    {
+      "item_id": "FOODS_3_295",
+      "demanda_7d": 185.2,
+      "demanda_prom_dia": 26.5,
+      "stock_actual": 132,
+      "punto_reorden": 185.2,
+      "reponer": true,
+      "cantidad_sugerida": 53,
+      "prioridad": "alta"
+    },
+    {
+      "item_id": "FOODS_3_499",
+      "demanda_7d": 83.3,
+      "demanda_prom_dia": 11.9,
+      "stock_actual": 95,
+      "punto_reorden": 83.3,
+      "reponer": false,
+      "cantidad_sugerida": 0,
+      "prioridad": "baja"
+    },
+    {
+      "item_id": "FOODS_3_501",
+      "demanda_7d": 193.5,
+      "demanda_prom_dia": 27.6,
+      "stock_actual": 283,
+      "punto_reorden": 193.5,
+      "reponer": false,
+      "cantidad_sugerida": 0,
+      "prioridad": "baja"
+    },
+    {
+      "item_id": "FOODS_3_511",
+      "demanda_7d": 197.3,
+      "demanda_prom_dia": 28.2,
+      "stock_actual": 74,
+      "punto_reorden": 197.3,
+      "reponer": true,
+      "cantidad_sugerida": 123,
+      "prioridad": "alta"
+    },
+    {
+      "item_id": "FOODS_3_555",
+      "demanda_7d": 157.8,
+      "demanda_prom_dia": 22.5,
+      "stock_actual": 109,
+      "punto_reorden": 157.8,
+      "reponer": true,
+      "cantidad_sugerida": 49,
+      "prioridad": "alta"
+    },
+    {
+      "item_id": "FOODS_3_586",
+      "demanda_7d": 298.4,
+      "demanda_prom_dia": 42.6,
+      "stock_actual": 291,
+      "punto_reorden": 298.4,
+      "reponer": true,
+      "cantidad_sugerida": 7,
+      "prioridad": "alta"
+    },
+    {
+      "item_id": "FOODS_3_587",
+      "demanda_7d": 220.6,
+      "demanda_prom_dia": 31.5,
+      "stock_actual": 420,
+      "punto_reorden": 220.6,
+      "reponer": false,
+      "cantidad_sugerida": 0,
+      "prioridad": "baja"
+    },
+    {
+      "item_id": "FOODS_3_681",
+      "demanda_7d": 162.5,
+      "demanda_prom_dia": 23.2,
+      "stock_actual": 66,
+      "punto_reorden": 162.5,
+      "reponer": true,
+      "cantidad_sugerida": 96,
+      "prioridad": "alta"
+    },
+    {
+      "item_id": "FOODS_3_714",
+      "demanda_7d": 159.9,
+      "demanda_prom_dia": 22.8,
+      "stock_actual": 94,
+      "punto_reorden": 159.9,
+      "reponer": true,
+      "cantidad_sugerida": 66,
+      "prioridad": "alta"
+    },
+    {
+      "item_id": "FOODS_3_739",
+      "demanda_7d": 84.7,
+      "demanda_prom_dia": 12.1,
+      "stock_actual": 80,
+      "punto_reorden": 84.7,
+      "reponer": true,
+      "cantidad_sugerida": 5,
+      "prioridad": "media"
+    },
+    {
+      "item_id": "FOODS_3_741",
+      "demanda_7d": 122.9,
+      "demanda_prom_dia": 17.6,
+      "stock_actual": 183,
+      "punto_reorden": 122.9,
+      "reponer": false,
+      "cantidad_sugerida": 0,
+      "prioridad": "baja"
+    }
+  ]
+}
