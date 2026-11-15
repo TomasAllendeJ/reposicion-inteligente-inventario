@@ -1,0 +1,13 @@
+# Industrial Telemetry
+
+**Philosophy:** Meaning emerges from the instrument panel — data observed with reverence, rendered with the quiet authority of a control room at night.
+
+Industrial Telemetry treats information as a signal to be read on glass. The surface is deep, near-black navy — the colour of a darkened operations deck — and across it a single living hue, a cold teal, carries every meaningful reading. Nothing competes with the signal. Secondary matter recedes into muted slate, present but never loud, so the eye travels straight to the number that matters. This restraint is not emptiness; it is the result of painstaking calibration, every value weighed, every mark earned, the composition tuned like an instrument by someone at the top of their craft.
+
+Form is built on an unforgiving grid. Space is divided with the precision of an engineering drawing: generous margins, aligned baselines, hairline rules that register like etched reference lines on a gauge. Large sculptural numerals anchor each field — a measurement made monumental — while clinical mono-spaced labels orbit them like the annotations of a technician. The contrast of scale does the work that paragraphs never should: the big number speaks, the small label confirms. Text is sparse and essential, integrated as part of the apparatus, never explanation.
+
+Colour is an information system, not decoration. Teal means *this is the reading*; coral and amber appear only to mark exception or hierarchy; everything else holds its breath in graphite and slate. A faint lattice of dots or lines may underlie a field — the ghost of graph paper, the suggestion of continuous measurement — rewarding the sustained viewer without ever shouting. Each chart is drawn as if plotted by a precision instrument: flat, honest, bar against bar, the winning value lit, the rest dimmed.
+
+Rhythm comes from repetition and alignment — the same kicker, the same baseline rule, the same index marker on every field, so the series reads as one continuous instrument rather than a set of slides. Within that discipline, each page finds a distinct centre of gravity: a word, a numeral, a diagram, a plotted comparison. The effect is cumulative, meticulous, master-level — an artefact that proves a system was not merely built but *measured*.
+
+The final work must feel laboured over with care: crisp to the pixel, nothing overlapping, nothing arbitrary, every alignment the product of countless refinements. It should read as telemetry from a real and serious machine — the kind of document an expert leaves behind as evidence of deep understanding.

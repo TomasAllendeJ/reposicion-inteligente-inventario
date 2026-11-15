@@ -266,3 +266,42 @@ def tablero():
     if os.path.exists(HTML_FILE):
         return HTMLResponse(open(HTML_FILE, encoding="utf-8").read())
     return HTMLResponse("<h1>Falta tablero/live.html</h1>", status_code=404)
+
+# ---------- Conteo manual de inventario (reponedor) ----------
+# El reponedor fotografia el producto (ViT lo identifica) y aqui registra
+# cuantas unidades quedan en gondola. Se guarda en un archivo y se lista.
+CONTEO_FILE = os.path.join(OUT, "conteo_inventario.json")
+
+def _leer_conteos():
+    if os.path.exists(CONTEO_FILE):
+        try:
+            return json.load(open(CONTEO_FILE, encoding="utf-8"))
+        except Exception:
+            return []
+    return []
+
+@app.post("/conteo")
+async def conteo_guardar(payload: dict):
+    """Registra un conteo manual: {producto, cantidad}."""
+    producto = str(payload.get("producto", "")).strip()
+    try:
+        cantidad = int(payload.get("cantidad"))
+    except (TypeError, ValueError):
+        return JSONResponse({"error": "cantidad invalida"}, status_code=400)
+    if not producto:
+        return JSONResponse({"error": "falta el producto"}, status_code=400)
+    registros = _leer_conteos()
+    registros.insert(0, {
+        "producto": producto,
+        "cantidad": cantidad,
+        "registrado_en": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    })
+    registros = registros[:50]  # mantener solo los ultimos 50
+    with open(CONTEO_FILE, "w", encoding="utf-8") as f:
+        json.dump(registros, f, ensure_ascii=False, indent=2)
+    return {"ok": True, "registros": registros}
+
+@app.get("/conteo")
+def conteo_listar():
+    """Devuelve los conteos registrados (mas reciente primero)."""
+    return {"registros": _leer_conteos()}

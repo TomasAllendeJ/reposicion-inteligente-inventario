@@ -85,6 +85,15 @@
       <input type="file" id="img" accept="image/*">
       <img id="prev" alt="preview">
       <div class="res" id="imgRes"><span class="muted">Esperando una foto...</span></div>
+      <div id="conteoBox" style="display:none;margin-top:10px;border-top:1px dashed var(--border);padding-top:10px">
+        <p class="hint" style="margin:0 0 6px">Registrar stock en gondola:</p>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="number" id="conteoNum" min="0" placeholder="Ej: 3" style="width:90px;font-family:inherit;font-size:.88rem;border:1px solid var(--border);border-radius:8px;padding:9px;background:var(--surface-2);color:var(--fg)">
+          <span class="muted" style="font-size:.82rem">unidades de <b id="conteoProd">-</b></span>
+          <button class="btn" onclick="registrarConteo()">Registrar</button>
+        </div>
+        <div id="conteoLista" style="margin-top:10px"></div>
+      </div>
     </div>
     <div class="card">
       <h3>&#128172; Clasificar reclamo (texto)</h3>
@@ -165,8 +174,44 @@ document.getElementById('img').addEventListener('change', async function(ev){
       '<div class="conf"><i style="width:'+pct+'%"></i></div>'+
       (j.revision_humana?'<div class="rev" style="margin-top:6px">Confianza baja: revision humana</div>':'')+
       '<div class="muted" style="margin-top:8px;font-size:.78rem">Top: '+(j.top3||[]).map(function(t){return t.producto+' '+Math.round(t.confianza*100)+'%';}).join(' / ')+'</div>';
+    // mostrar casilla de conteo con el producto reconocido
+    PROD_ACTUAL = j.producto;
+    document.getElementById('conteoProd').textContent = j.producto;
+    document.getElementById('conteoBox').style.display = 'block';
   }catch(e){ box.innerHTML = 'No se pudo conectar al servicio.'; }
 });
+
+// ---------- Conteo manual de inventario ----------
+let PROD_ACTUAL = '';
+async function registrarConteo(){
+  const n = document.getElementById('conteoNum').value;
+  const lista = document.getElementById('conteoLista');
+  if(!PROD_ACTUAL){ lista.innerHTML = '<span class="muted" style="font-size:.8rem">Primero reconoce un producto con la foto.</span>'; return; }
+  if(n === '' || isNaN(n)){ lista.innerHTML = '<span class="rev" style="font-size:.8rem">Escribe un numero.</span>'; return; }
+  try{
+    const r = await fetch('/conteo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({producto:PROD_ACTUAL,cantidad:Number(n)})});
+    const j = await r.json();
+    if(j.error){ lista.innerHTML = '<span class="rev" style="font-size:.8rem">'+j.error+'</span>'; return; }
+    document.getElementById('conteoNum').value = '';
+    renderConteos(j.registros);
+  }catch(e){ lista.innerHTML = '<span class="rev" style="font-size:.8rem">No se pudo guardar.</span>'; }
+}
+function renderConteos(regs){
+  const lista = document.getElementById('conteoLista');
+  if(!regs || !regs.length){ lista.innerHTML = ''; return; }
+  let h = '<div class="muted" style="font-size:.76rem;margin-bottom:4px"><b>Conteos registrados:</b></div>';
+  regs.slice(0,6).forEach(function(x){
+    const low = x.cantidad <= 3;
+    h += '<div style="font-size:.82rem;margin-top:2px">'+
+         '<b>'+x.producto+'</b>: '+x.cantidad+' uds '+
+         (low?'<span class="pill alta" style="font-size:.66rem">bajo</span>':'')+
+         ' <span class="muted" style="font-size:.72rem">'+x.registrado_en+'</span></div>';
+  });
+  lista.innerHTML = h;
+}
+async function cargarConteos(){
+  try{ const j = await (await fetch('/conteo',{cache:'no-store'})).json(); renderConteos(j.registros); }catch(e){}
+}
 
 // ---------- Demo reclamo ----------
 async function demoReclamo(){
@@ -201,6 +246,7 @@ function charts(){
 }
 
 cargarCorrida();
+cargarConteos();
 charts();
 </script>
 </body>
